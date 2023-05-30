@@ -1,0 +1,52 @@
+drzwi(salon,kuchnia).
+drzwi(salon,oranzeria).
+drzwi(kuchnia,sypialnia).
+drzwi(korytarz,piwnica).
+drzwi(ubikacja,piwnica).
+drzwi(korytarz,ubikacja).
+drzwi(kuchnia,korytarz).
+drzwi(oranzeria,lazienka).
+klucz(lazienka,klucz_duzy).
+klucz(oranzeria,klucz_maly).
+klucz(korytarz,klucz_z_sercem).
+otwiera(ubikacja,klucz_maly).
+otwiera(oranzeria,klucz_z_sercem).
+
+
+inform(X,Y) :- write([ide_z, X, do, Y]),nl.
+informReturn(X) :- write([wychodze_z, X]),nl.
+informKey(X) :- write([znalazlem_klucz, X]),nl.
+informExit() :- write([znalazlem_wyjscie]),nl.
+
+
+canOpen(X,K):-
+    otwiera(X,TEST), K ==TEST.
+
+pass_door(X,Z):-
+  (drzwi(X,Z);
+  drzwi(Z,X));
+  informReturn(X).
+
+
+
+
+inner_go(X,Y,_,_) :- X=Y.
+inner_go(X,Y,T,K):- 
+ 
+	(otwiera(X,K),informExit());   
+    (pass_door(X,Z),\+ member(Z,T),atom(Z),inform(X,Z),inner_go(Z,Y,[Z|T],K)).
+
+go(X,Y,_,_) :- X=Y.
+go(X,Y,T,K):- 
+	pass_door(X,Z),\+ member(Z,T),atom(Z),
+    
+	((klucz(X,K),informKey(K),inform(X,Z),inner_go(Z,Y,[],K));
+    (inform(X,Z),go(Z,Y,[Z|T],K))).
+
+ 
+szukaj_wyjscia(salon,Gdzie_klucz,Wlasciwy_klucz,Gdzie_wyjscie):-
+  	go(salon,Gdzie_wyjscie,[],Wlasciwy_klucz),
+    atom(Wlasciwy_klucz),
+    otwiera(Gdzie_wyjscie,Wlasciwy_klucz),
+    klucz(Gdzie_klucz,Wlasciwy_klucz),
+    informExit().
